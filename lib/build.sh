@@ -6,7 +6,6 @@ cleanup_cache() {
     rm -rf $cache_dir/node-version
     rm -rf $cache_dir/phoenix-static
     rm -rf $cache_dir/yarn-cache
-    rm -rf $cache_dir/node_modules
     cleanup_old_node
   fi
 }
@@ -117,13 +116,13 @@ install_yarn() {
 install_and_cache_deps() {
   cd $assets_dir
 
-  if [ -d $cache_dir/node_modules ]; then
-    info "Loading node modules from cache"
-    mkdir node_modules
-    cp -R $cache_dir/node_modules/* node_modules/
+  if [ -d $cache_dir/yarn-cache ]; then
+    info "Loading yarn-cache from cache"
+    mkdir yarn-cache
+    cp -R $cache_dir/yarn-cache/* yarn-cache/
   fi
 
-  info "Installing node modules"
+  info "Installing yarn dependencies"
   if [ -f "$assets_dir/yarn.lock" ]; then
     install_yarn_deps
   else
@@ -131,9 +130,7 @@ install_and_cache_deps() {
   fi
 
   info "Caching node modules"
-  cp -R node_modules $cache_dir
-
-  PATH=$assets_dir/node_modules/.bin:$PATH
+  cp -R yarn-cache $cache_dir
 
   install_bower_deps
 }
@@ -146,7 +143,10 @@ install_npm_deps() {
 }
 
 install_yarn_deps() {
-  yarn install --check-files --cache-folder $cache_dir/yarn-cache --pure-lockfile 2>&1
+  # Yarn v2.x
+  yarn config set cacheFolder $cache_dir/yarn-cache
+  # yarn install --immutable 2>&1 | grep -v YN0013
+  yarn install 2>&1 | grep -v YN0013
 }
 
 install_bower_deps() {
@@ -227,7 +227,7 @@ write_profile() {
 }
 
 remove_node() {
-  info "Removing node and node_modules"
-  rm -rf $assets_dir/node_modules
+  info "Removing node and yarn cache"
+  rm -rf $assets_dir/yarn-cache
   rm -rf $heroku_dir/node
 }
