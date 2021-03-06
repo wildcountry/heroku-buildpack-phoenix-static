@@ -116,21 +116,23 @@ install_yarn() {
 install_and_cache_deps() {
   cd $assets_dir
 
-  if [ -d $cache_dir/yarn-cache ]; then
-    info "Loading yarn-cache from cache"
-    mkdir yarn-cache
-    cp -R $cache_dir/yarn-cache/* yarn-cache/
-  fi
+  # if [ -d $cache_dir/node_modules ]; then
+  #   info "Loading node modules from cache"
+  #   mkdir node_modules
+  #   cp -R $cache_dir/node_modules/* node_modules/
+  # fi
 
-  info "Installing yarn dependencies"
+  info "Installing node modules"
   if [ -f "$assets_dir/yarn.lock" ]; then
     install_yarn_deps
   else
     install_npm_deps
   fi
 
-  info "Caching node modules"
-  cp -R yarn-cache $cache_dir
+  # info "Caching node modules"
+  # cp -R node_modules $cache_dir
+
+  # PATH=$assets_dir/node_modules/.bin:$PATH
 
   install_bower_deps
 }
@@ -144,7 +146,9 @@ install_npm_deps() {
 
 install_yarn_deps() {
   # Yarn v2.x
+  mkdir -p $cache_dir/yarn-cache
   yarn config set cacheFolder $cache_dir/yarn-cache
+
   # yarn install --immutable 2>&1 | grep -v YN0013
   yarn install 2>&1 | grep -v YN0013
 }
